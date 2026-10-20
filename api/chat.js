@@ -5,38 +5,47 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: { message: "GEMINI_KEY not set in Vercel > Settings > Environment Variables" } });
+    return res.status(500).json({ error: { message: "GEMINI_KEY not set in Vercel" } });
   }
 
   const { messages } = req.body;
   const lastUserMsg = messages?.filter(m => m.role === 'user').pop()?.content || "";
   const history = messages?.slice(-8).map(m => `${m.role}: ${m.content}`).join("\n") || "";
 
-  const systemPrompt = `You are NOOK Concierge for NOOK Furniture, Abuja, Nigeria. Products: Executive Swivel Chair 95k, Kanu Table 199k (walnut coffee table), Yemi Chair 116k (boucle), Bimbo Dining 4-set 289k, Aura Lamp 52k, Fela Stool 95k (bar stool). Delivery: Abuja 1-2 days, Lagos 2-5 days. Be friendly, concise, mention Naira prices. Keep under 70 words.`;
+  const prompt = `You are NOOK Concierge for NOOK Furniture, Abuja. Products: Executive Swivel Chair 95k, Kanu Table 199k, Yemi Chair 116k, Bimbo Dining 289k, Aura Lamp 52k, Fela Stool 95k. Delivery Abuja 1-2 days, Lagos 2-5 days. Be friendly, short, Naira prices. Under 70 words.\n\nHistory:\n${history}\n\nUser: ${lastUserMsg}`;
 
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `${systemPrompt}\n\nHistory:\n${history}\n\nUser: ${lastUserMsg}` }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
-      })
-    });
+  // Try latest models in order
+  const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
 
-    const data = await response.json();
-    
-    if (data.error) {
-      return res.status(500).json({ error: data.error });
+  for (const model of modelsToTry) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        // If model not found, try next model
+        if (data.error.message?.includes("not found") || data.error.message?.includes("not supported") || data.error.message?.includes("no longer available")) {
+          continue; 
+        }
+        return res.status(500).json({ error: data.error });
+      }
+      
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (reply) {
+        return res.status(200).json({ choices: [{ message: { content: reply } }] });
+      }
+    } catch (e) {
+      continue;
     }
-    
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't reply. Try again.";
-
-    return res.status(200).json({
-      choices: [{ message: { content: reply } }]
-    });
-
-  } catch (err) {
-    return res.status(500).json({ error: { message: err.message } });
   }
+
+  return res.status(500).json({ error: { message: "All Gemini models failed. Try regenerating your GEMINI_KEY in Google AI Studio." } });
 }
