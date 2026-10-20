@@ -5,24 +5,24 @@ export default async function handler(req, res) {
 
   try {
     const { message } = req.body;
-    if (!message) {
-      return res.status(400).json({ error: 'Message required' });
+    const API_KEY = process.env.GOOGLE_API_KEY;
+
+    if (!API_KEY) {
+      return res.status(500).json({ error: 'GOOGLE_API_KEY missing in Vercel' });
     }
 
-    const MODEL = "models/gemini-3.8-flash";
-    const KEY = process.env.GOOGLE_API_KEY;
-
-    if (!KEY) {
-      return res.status(500).json({ error: 'GOOGLE_API_KEY not set in Vercel' });
-    }
-
+    // NEW Interactions API - exactly as Google recommends
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent?key=${KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/interactions`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'x-goog-api-key': API_KEY,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: message }] }]
+          model: "gemini-3.8-flash",
+          input: message
         })
       }
     );
@@ -30,11 +30,13 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: JSON.stringify(data) });
+      return res.status(response.status).json(data);
     }
 
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
-    return res.status(200).json({ reply: replyText });
+    // New API returns output_text
+    const reply = data.output_text || data.outputs?.[0]?.text || "No response";
+    
+    return res.status(200).json({ reply });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
