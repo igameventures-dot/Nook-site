@@ -159,14 +159,12 @@ Chat
 <footer><div style="max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px"><div><b style="font-family:'Fraunces',serif;font-size:18px">NOOK<span style="color:var(--ochre)">.</span></b><p style="margin-top:6px">Intentional colour system</p></div><p>© 2026 NOOK Interiors</p></div></footer>
 
 <script>
-// KEEP YOUR ORIGINAL MENU CODE - UNCHANGED
 const hamBtn=document.getElementById('hamBtn'),mobileMenu=document.getElementById('mobileMenu'),overlay=document.getElementById('overlay');
 function openMenu(){mobileMenu.classList.add('open');overlay.classList.add('open');hamBtn.classList.add('active')}
 function closeMenu(){mobileMenu.classList.remove('open');overlay.classList.remove('open');hamBtn.classList.remove('active')}
 hamBtn.addEventListener('click',()=>mobileMenu.classList.contains('open')?closeMenu():openMenu());
 document.getElementById('closeMenu').addEventListener('click',closeMenu);overlay.addEventListener('click',closeMenu);
 
-// CHAT LOGIC - NOW CALLS YOUR SECURE /api/chat BACKEND (NO KEY IN FRONTEND)
 const chatBtn=document.getElementById('chatBtn'), chatWin=document.getElementById('chatWin'), chatBody=document.getElementById('chatBody'), chatInput=document.getElementById('chatInput'), chatSend=document.getElementById('chatSend');
 chatBtn.addEventListener('click',()=>chatWin.classList.toggle('open'));
 document.getElementById('closeChat').addEventListener('click',()=>chatWin.classList.remove('open'));
@@ -179,7 +177,7 @@ document.getElementById('whatsappBtn').addEventListener('click',()=>{
 let chatHistory = [
   {role:"system", content:`You are NOOK Concierge, an AI for NOOK furniture in Abuja, Nigeria.
 Products: Executive Swivel Chair ₦95k, Kanu Table ₦199k (walnut coffee), Yemi Chair ₦116k (boucle accent), Bimbo Dining 4-set ₦289k, Aura Lamp ₦52k, Fela Stool ₦95k (bar stool).
-You help customers find products, answer about price, material, delivery in Abuja/Lagos (1-5 days), cart. Be friendly, short, use NOOK tone: minimal, warm. If asked to filter, suggest searching. Always mention prices in Naira. Keep replies under 80 words. If user wants to buy, tell them to add to cart and click cart icon.`}
+You help customers find products, answer about price, material, delivery in Abuja/Lagos (1-5 days), cart. Be friendly, short, use NOOK tone: minimal, warm. Always mention prices in Naira. Keep replies under 80 words.`}
 ];
 
 function addMsg(text, who){
@@ -193,38 +191,27 @@ function addMsg(text, who){
 
 async function sendToChatGPT(){
   const text=chatInput.value.trim(); if(!text) return;
-  
   addMsg(text,'user');
   chatHistory.push({role:"user", content:text});
   chatInput.value='';
-  
   const typingDiv=addMsg("NOOK is typing...","typing");
-  
   try{
-    const res=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ messages: chatHistory })
-    });
+    const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ messages: chatHistory })});
     const data=await res.json();
     typingDiv.remove();
-    if(data.error){ 
-      addMsg(`Error: ${data.error.message || JSON.stringify(data.error)}<br>Check GEMINI_KEY in Vercel.`, 'bot'); 
-      return; 
-    }
-    const reply=data.choices[0].message.content;
+    if(data.error){ addMsg("Error: "+(data.error.message || JSON.stringify(data.error)), 'bot'); return; }
+    const reply=data.choices?.[0]?.message?.content || data.reply || "Sorry, no reply.";
     addMsg(reply,'bot');
     chatHistory.push({role:"assistant", content:reply});
   }catch(err){
     typingDiv.remove();
-    addMsg("Network error. Make sure you added GEMINI_KEY in Vercel > Environment Variables and redeployed. You can still chat on WhatsApp.",'bot');
+    addMsg("Connection error. Check that api/chat.js is deployed and GEMINI_KEY is set in Vercel. You can chat on WhatsApp.","bot");
   }
 }
 
 chatSend.addEventListener('click', sendToChatGPT);
 chatInput.addEventListener('keydown', e=>{ if(e.key==='Enter') sendToChatGPT(); });
 
-// KEEP YOUR ORIGINAL SHOP LOGIC - UNCHANGED
 const searchInput=document.getElementById('searchInput'),products=document.querySelectorAll('.card'),countLabel=document.getElementById('countLabel');
 searchInput.addEventListener('input',()=>{const q=searchInput.value.toLowerCase().trim();let v=0;products.forEach(c=>{const s=c.getAttribute('data-name').includes(q);c.style.display=s?'block':'none';if(s)v++;});countLabel.textContent=v+' products';});
 let cart=[],cartCount=0;
