@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Victory R Swivel Office Chair - NOOK</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:#FCFBF9;color:#1A2B32}
+.top{position:sticky;top:0;z-index:20;background:rgba(252,251,249,.85);backdrop-filter:blur(16px);border-bottom:1px solid #EFEEE9;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Fraunces',serif;font-weight:600;letter-spacing:-.5px;font-size:22px;color:#0F2D3A} .logo span{color:#C58B3A;font-weight:300}
+.back{width:36px;height:36px;border-radius:50%;border:1px solid #E8E6DF;background:#fff;display:grid;place-items:center;cursor:pointer}
+.name-top{padding:20px 18px 10px 18px}
+.name-top h1{font-family:'Fraunces',serif;font-weight:300;font-size:26px;line-height:1.1;letter-spacing:-.6px;color:#0F2D3A}
+.name-top .cat{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#9AA4A6;margin-top:8px;font-weight:500}
+.name-top .price{font-size:16px;font-weight:600;margin-top:10px;color:#0F2D3A}
+.slider-wrap{position:relative;margin-top:8px}
+.slider{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-behavior:smooth}
+.slider::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:start;background:#F3F1EC;aspect-ratio:1/1;position:relative}
+.slide img{width:100%;height:100%;object-fit:cover}
+.dots-wrap{position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;z-index:5}
+.dots{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.9);box-shadow:0 4px 20px rgba(15,45,58,.08)}
+.dot{width:6px;height:6px;border-radius:50%;background:#D6D2C9;transition:all .4s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.dot.active{width:26px;border-radius:999px;background:#0F2D3A}
+.info{padding:18px}
+.desc{background:#fff;border:1px solid #EFEEE9;border-radius:18px;padding:16px;line-height:1.7;font-size:13.5px;color:#3D4D52;white-space:pre-wrap}
+.btn{width:100%;padding:16px;border-radius:999px;border:0;font-weight:600;letter-spacing:.2px;cursor:pointer;font-family:'Outfit';font-size:14px;margin-top:12px}
+.btn-dark{background:#0F2D3A;color:#fff;box-shadow:0 8px 24px rgba(15,45,58,.18)}
+.btn-light{background:#fff;border:1px solid #E8E6DF;color:#0F2D3A}
+.count{position:absolute;top:16px;right:16px;background:rgba(15,45,58,.82);color:#fff;font-size:10px;padding:6px 10px;border-radius:999px;letter-spacing:.5px;backdrop-filter:blur(6px)}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">NOOK<span>.</span></div>
+  <button class="back" onclick="history.back()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F2D3A" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+</div>
+
+<div class="name-top">
+  <h1>Victory R Swivel Office Chair</h1>
+  <div class="cat">Chairs — Available</div>
+  <div class="price">₦40,000</div>
+</div>
+
+<div class="slider-wrap" id="wrap">
+  <div class="slider" id="slider" onscroll="updateDots()">
+    <div class="slide"><img src="https://nqaiivvbhmddlexgdfwz.supabase.co/storage/v1/object/public/Product-images/victory.jpg" alt="Victory R Swivel Office Chair"></div><div class="slide"><img src="https://nqaiivvbhmddlexgdfwz.supabase.co/storage/v1/object/public/Product-images/1793698932587-xhw-1793697715914.jpg" alt="Victory R Swivel Office Chair"></div><div class="slide"><img src="https://nqaiivvbhmddlexgdfwz.supabase.co/storage/v1/object/public/Product-images/1793698947534-cma-1793697786851.jpg" alt="Victory R Swivel Office Chair"></div><div class="slide"><img src="https://nqaiivvbhmddlexgdfwz.supabase.co/storage/v1/object/public/Product-images/1793698959067-504-1793698213956.jpg" alt="Victory R Swivel Office Chair"></div>
+  </div>
+  <div class="count" id="count">1 / 4</div>
+  <div class="dots-wrap">
+    <div class="dots" id="dots">
+      <span class="dot active" onclick="goTo(0,true)"></span><span class="dot " onclick="goTo(1,true)"></span><span class="dot " onclick="goTo(2,true)"></span><span class="dot " onclick="goTo(3,true)"></span>
+    </div>
+  </div>
+</div>
+
+<div class="info">
+  <div class="desc">No description added.</div>
+  <button class="btn btn-dark" onclick="addToCart()">Add to Cart — ₦40,000</button>
+  <button class="btn btn-light" onclick="location.href='index.html'">Back to Shop</button>
+</div>
+
+<script>
+let cur=0;
+const total=4;
+const slider=document.getElementById('slider');
+let autoTimer=null;
+let resumeTimer=null;
+
+function updateDots(){
+  const idx=Math.round(slider.scrollLeft / slider.offsetWidth);
+  if(!isNaN(idx)){
+    cur=idx;
+    document.querySelectorAll('.dot').forEach((d,i)=>{d.classList.toggle('active', i===idx)});
+    document.getElementById('count').innerText=(idx+1)+' / '+total;
+  }
+}
+function goTo(i, userClicked=false){
+  if(userClicked) pauseAuto();
+  cur=i;
+  slider.scrollTo({left:i*slider.offsetWidth, behavior:'smooth'});
+  // update dots immediately for better feel
+  setTimeout(updateDots, 100);
+}
+
+// AUTO SLIDE EVERY 3 SECONDS
+function startAuto(){
+  if(total <= 1) return;
+  clearInterval(autoTimer);
+  autoTimer=setInterval(()=>{
+    let next=(cur+1) % total;
+    goTo(next);
+  }, 3000);
+}
+function pauseAuto(){
+  clearInterval(autoTimer);
+  clearTimeout(resumeTimer);
+  // resume after 5 seconds of no touch
+  resumeTimer=setTimeout(()=>{ startAuto(); }, 5000);
+}
+
+// Pause on touch / swipe
+let sx=0;
+slider.addEventListener('touchstart', e=>{
+  sx=e.touches[0].clientX;
+  pauseAuto();
+},{passive:true});
+slider.addEventListener('touchend', e=>{
+  const dx=sx-e.changedTouches[0].clientX;
+  if(Math.abs(dx)>40){
+    if(dx>0 && cur<total-1) goTo(cur+1);
+    if(dx<0 && cur>0) goTo(cur-1);
+  }
+  pauseAuto();
+},{passive:true});
+
+// Pause on mouse drag for desktop
+slider.addEventListener('mousedown', e=>{ sx=e.clientX; pauseAuto(); });
+slider.addEventListener('mouseup', e=>{
+  const dx=sx-e.clientX;
+  if(Math.abs(dx)>40){
+    if(dx>0 && cur<total-1) goTo(cur+1);
+    if(dx<0 && cur>0) goTo(cur-1);
+  }
+});
+
+// Start auto when page loads
+startAuto();
+
+// Pause when tab not visible to save battery
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) clearInterval(autoTimer);
+  else startAuto();
+});
+
+function addToCart(){
+  let cart=JSON.parse(localStorage.getItem('nook_cart')||'[]');
+  let ex=cart.find(c=>String(c.id)==='1');
+  if(ex) ex.qty++; else cart.push({id:'1', name:'Victory R Swivel Office Chair', price:'₦40,000', priceNum:40000, img:'https://nqaiivvbhmddlexgdfwz.supabase.co/storage/v1/object/public/Product-images/victory.jpg', qty:1});
+  localStorage.setItem('nook_cart',JSON.stringify(cart));
+  location.href='index.html';
+}
+</script>
+</body>
+</html>
