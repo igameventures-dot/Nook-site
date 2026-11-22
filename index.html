@@ -59,9 +59,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(250,249,246,0.92);backd
 .hl-text{background:rgba(197,139,58,0.65);color:#fff;padding:3px 7px;border-radius:6px;line-height:2.0}
 .section-head{max-width:500px;margin:8px auto 0;padding:0 16px;display:flex;justify-content:space-between;align-items:center}
 .section-head h2{font-family:'Montserrat',sans-serif;font-weight:500;font-size:16px;color:var(--deep-navy);text-transform:uppercase}
-.filters{max-width:500px;margin:12px auto;padding:0 16px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.filters{max-width:500px;margin:12px auto;padding:0 16px 2px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;border:none;border-bottom:none;box-shadow:none}
+.filters::-webkit-scrollbar{display:none;width:0;height:0}
 .chip{white-space:nowrap;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer}
-.chip.active{background:var(--deep-navy);color:#fff;border-color:var(--deep-navy)}
+.chip.active{background:var(--deep-navy);color:#fff;border-color:var(--deep-navy);text-decoration:none;border-bottom:1px solid var(--deep-navy);box-shadow:none;outline:none}
 .products{max-width:500px;margin:0 auto;padding:14px 16px 100px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .p-card{background:var(--surface);border-radius:20px;overflow:hidden;border:1px solid var(--border);cursor:pointer}
 .p-img{aspect-ratio:4/3;background:var(--surface-2);overflow:hidden;position:relative}
