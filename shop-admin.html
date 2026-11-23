@@ -192,7 +192,7 @@ async function checkAdminAccess(user){
   let q1 = await supabaseClient.from('workers').select('*').eq('auth_id', user.id).single();
   if(q1.data) worker = q1.data;
   if(!worker){ let q2 = await supabaseClient.from('workers').select('*').eq('email', (user.email||'').toLowerCase()).single(); if(q2.data){ worker = q2.data; await supabaseClient.from('workers').update({ auth_id: user.id }).eq('id', worker.id); worker.auth_id = user.id; } }
-  if(!worker) return { ok:true, worker:null };
+  if(!worker) return { ok:false, reason:'⛔ You are not staff. Customers cannot open Admin.' };
   if(!['Admin','All Departments'].includes(worker.role)) return { ok:false, reason:'⛔ You are assigned to '+worker.role+'. You cannot open Admin. Use your own panel.' };
   return { ok:true, worker };
 }
